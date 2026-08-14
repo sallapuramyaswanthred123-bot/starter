@@ -1,0 +1,16 @@
+name: Frontend CD
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./starter/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t frontend .
+      - name: Push to registry
+        run: echo "Add your docker push commands here"
