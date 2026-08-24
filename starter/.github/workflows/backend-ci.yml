@@ -1,22 +1,35 @@
-cat > .github/workflows/backend-ci.yml << 'EOF'
-name: Backend CI
-on: [push, pull_request]
+name: Backend Continuous Integration
+on:
+  pull_request:
+    branches: [main]
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory:./backend
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: npm run lint
   test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./starter/backend
+        working-directory:./backend
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          python-version: '3.10'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run flake8
-        run: python -m flake8
-      - name: Run tests
-        run: python -m pytest
-EOF
+          node-version: 18
+      - run: npm ci
+      - run: npm test
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v3
+      - run: docker build -t backend./backend
