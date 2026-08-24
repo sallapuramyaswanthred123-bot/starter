@@ -1,5 +1,0 @@
-.terraform/
-*.tfstate
-*zip
-terraform-provider*
-__pycache__/
