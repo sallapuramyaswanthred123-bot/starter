@@ -1,0 +1,13 @@
+name: backend-cd
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build backend
+        run: |
+          cd backend
+          docker build -t backend.

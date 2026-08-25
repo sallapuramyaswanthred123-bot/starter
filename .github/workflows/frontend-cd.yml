@@ -1,0 +1,13 @@
+name: frontend-cd
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build frontend
+        run: |
+          cd frontend
+          docker build -t frontend.
