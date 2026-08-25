@@ -2,16 +2,20 @@ name: Frontend Continuous Integration
 on:
   pull_request:
     branches: [main]
-    paths: ['frontend/**']
+    paths:
+      - 'frontend/**'
   workflow_dispatch:
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with: {node-version: 18}
-      - working-directory:./frontend
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Lint
+        working-directory:./frontend
         run: |
           npm ci
           npm run lint
@@ -19,9 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with: {node-version: 18}
-      - working-directory:./frontend
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Test
+        working-directory:./frontend
         run: |
           npm ci
           npm test
@@ -30,9 +37,12 @@ jobs:
     needs: [lint, test]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with: {node-version: 18}
-      - working-directory:./frontend
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Build
+        working-directory:./frontend
         run: |
           npm ci
           npm run build
