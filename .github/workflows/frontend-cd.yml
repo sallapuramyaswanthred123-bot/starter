@@ -8,6 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build frontend
-        run: |
-          cd frontend
-          docker build -t frontend.
+        run: docker build -t frontend./frontend
