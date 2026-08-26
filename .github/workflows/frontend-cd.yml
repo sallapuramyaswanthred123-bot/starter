@@ -2,10 +2,45 @@ name: frontend-cd
 on:
   push:
     branches: [main]
+    paths: ['frontend/**']
+  workflow_dispatch:
 jobs:
-  deploy:
+  lint:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: { node-version: 18 }
+      - run: npm ci
+      - run: npm run lint
+  test:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: { node-version: 18 }
+      - run: npm ci
+      - run: CI=true npm test
+  build:
+    needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build frontend
-        run: docker build -t frontend./frontend
+      - run: docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 -t mp-frontend./frontend
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - run: aws eks update-kubeconfig --name mp-cluster --region us-east-1
+      - run: |
+          cd frontend/k8s
+          kustomize edit set image frontend=${{ secrets.AWS_ECR_FRONTEND_REPO }}:${{ github.sha }}
+          kustomize build | kubectl apply -f -
