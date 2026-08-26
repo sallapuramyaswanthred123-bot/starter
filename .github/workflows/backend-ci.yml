@@ -1,10 +1,70 @@
-name: backend-ci
+name: Backend Continuous Integration
+
 on:
-  push:
-    branches: [main]
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+  workflow_dispatch:
+
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - run: cd backend && echo "backend ok"
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pipenv install --dev
+
+      - name: Run lint
+        working-directory: backend
+        run: pipenv run lint
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pipenv install --dev
+
+      - name: Run tests
+        working-directory: backend
+        run: pipenv run test
+
+  build:
+    needs:
+      - lint
+      - test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Build backend Docker image
+        working-directory: backend
+        run: docker build -t backend:${{ github.sha }} .
